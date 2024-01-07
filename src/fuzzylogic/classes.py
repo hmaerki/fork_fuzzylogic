@@ -451,13 +451,39 @@ class Rule:
             actual_values = {
                 f: f(args[f.domain]) for S in self.conditions.keys() for f in S
             }
+            # actual_values = {}
+            # for S in self.conditions.keys():
+            #     for f in S:
+            #        v = f(args[f.domain])
+            #        actual_values[f] = v
+            #        print(f"    {f.domain._name}.{f.name}:{v:0.2}")
 
+            print("  actual_values")
+            for f, v in actual_values.items():
+                print(f"    {f.domain._name}.{f.name}:{v:0.2f}")
             weights = []
             for K, v in self.conditions.items():
-                x = min((actual_values[k] for k in K if k in actual_values), default=0)
+                # x = min((actual_values[k] for k in K if k in actual_values), default=0)
+                x_values = []
+                for k in K:
+                     if k in actual_values:
+                         x_values.append((k, actual_values[k]))
+                # x = min(x_values, default=0)
+                x = 1e9
+                x_k = "?"
+                for k, x_value in x_values:
+                    if x_value < x:
+                        x = x_value
+                        x_k = k
+                if x > 1e8:
+                    x = 0
+                print(f"Relevant: {x:0.2f} {x_k.domain._name}")
                 if x > 0:
                     weights.append((v, x))
 
+            print("  weights")
+            for v, x in weights:
+                print(f"    {v} {x:0.2f}")
             if not weights:
                 return None
             target_domain = list(self.conditions.values())[0].domain
